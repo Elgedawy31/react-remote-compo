@@ -26,7 +26,7 @@
 ],
 "repository": {
   "type": "git",
-  "url": "https://github.com/yourname/your-repo"
+  "url": "https://github.com/elgedawy31/react-remote-compo"
 },
 "description": "Reusable remote autocomplete with pagination for React",
 "scripts": {
