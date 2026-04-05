@@ -123,18 +123,20 @@ Use a **stable** `queryKey` (e.g. `['users']`, or `['tasks', projectId]` when th
 
 ## Styling
 
-The UI is **Tailwind-based by default**: `UiAutocomplete` and internal primitives apply **Tailwind utility classes** and **shadcn-style semantic tokens** (for example `bg-popover`, `text-muted-foreground`, `border-input`, `ring-ring`). There is **no separate CSS file** in the npm package—the “default look” comes from those classes once your app’s Tailwind build includes them.
+This library includes **default Tailwind-based styles**: components use Tailwind utility classes and shadcn-style tokens (for example `bg-popover`, `text-muted-foreground`, `border-input`). **The npm package does not ship a standalone CSS file**—the default look only applies once your app’s Tailwind pipeline generates those utilities.
 
 To use them correctly:
 
-- **Configure Tailwind** in your project and ensure this library’s files are **scanned** so those utilities are generated (see below).
-- **Define theme tokens** (CSS variables or Tailwind theme) compatible with shadcn/ui where you use semantic classes.
+- **Configure Tailwind** in your project and ensure this library is included in your **content / `@source` scan** (see [Tailwind: scanning this package](#tailwind-scanning-this-package) below).
+- **Override the trigger** with the **`className`** prop on **`UiAutocomplete`** (merged onto the read-only input).
 
-**Overrides:** pass **`className`** on **`UiAutocomplete`** for the **trigger** `<input>`. Use **`popoverContentClassName`**, **`commandListClassName`**, and **`clearButtonClassName`** for other surfaces (Tailwind only; no CSS files shipped). For deeper changes, target the rendered DOM with global CSS or use **`usePaginatedSearch`** with your own components.
+Optional **`popoverContentClassName`**, **`commandListClassName`**, and **`clearButtonClassName`** adjust other surfaces; see [Customization](#customization). For anything beyond that, use global CSS on the rendered markup or **`usePaginatedSearch`** with your own components.
+
+Set up **theme tokens** (CSS variables or Tailwind theme extensions) in your app if you use semantic color classes.
 
 ### Tailwind: scanning this package
 
-Published artifacts are **JavaScript in `dist/`**; Tailwind must still **see** the class strings. Typical approaches:
+Published code lives under **`dist/`** as JavaScript; Tailwind must still **see** the embedded class strings:
 
 - **Tailwind v4:** add a [`@source`](https://tailwindcss.com/docs/detecting-classes-in-source-files) path that includes this package, for example:
 
@@ -143,13 +145,13 @@ Published artifacts are **JavaScript in `dist/`**; Tailwind must still **see** t
   @source "../node_modules/my-autocomplete-lib/dist";
   ```
 
-  Adjust the relative path to match your project layout. Confirm generated CSS in your app after a production build.
+  Adjust the path for your layout and verify CSS in a production build.
 
-- **Monorepo / linked package:** you may `@source` the library’s `src/lib` folder during development so all utilities are detected without relying only on minified `dist` output.
+- **Monorepo / linked package:** you can `@source` the library’s `src/lib` during development.
 
-- **Tailwind v3:** add the package path to the `content` array (for example `./node_modules/my-autocomplete-lib/dist/**/*.{js,mjs}`) so the JIT picks up utilities used in the bundle.
+- **Tailwind v3:** add something like `./node_modules/my-autocomplete-lib/dist/**/*.{js,mjs}` to **`content`**.
 
-If classes are missing at runtime, widen your content/`@source` globs or add a safelist for the tokens you use.
+If utilities are missing, widen globs or add a safelist for the tokens you need.
 
 ## Customization
 
