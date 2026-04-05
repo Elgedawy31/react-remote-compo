@@ -12,6 +12,10 @@ export interface FetchPaginatedPageArgs {
   signal: AbortSignal | undefined
 }
 
+/**
+ * Load a single page for infinite query. You must map the backend response into
+ * {@link PaginatedApiResponse} (correct `data` array and `pagination` fields).
+ */
 export type FetchPaginatedPage<T extends Record<string, unknown>> = (
   args: FetchPaginatedPageArgs,
 ) => Promise<PaginatedApiResponse<T>>
