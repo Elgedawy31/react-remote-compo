@@ -1,4 +1,5 @@
 export { UiAutocomplete, type UiAutocompleteProps } from './UiAutocomplete'
+export { defaultGetOptionLabel, defaultGetOptionValue } from './optionDefaults'
 export {
   usePaginatedSearch,
   type UsePaginatedSearchOptions,

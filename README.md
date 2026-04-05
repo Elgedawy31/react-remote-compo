@@ -17,7 +17,9 @@ Use **`UiAutocomplete`** for a complete control, or **`usePaginatedSearch`** alo
 - Debounced search (`debounceMs` configurable)
 - Optional **`triggerOnFocus`** to defer fetching until the popover opens
 - **`additionalParams`** merged into your fetch logic (via `fetchPage` / hook)
-- Display helpers for **`first_name` / `last_name`** and **`package`** on options (see `UiAutocomplete` source)
+- Optional **`getOptionLabel`** / **`getOptionValue`** for generic row labeling and identity (defaults: `name` / `id`)
+- Optional **`renderOption`**, **`renderEmpty`**, **`renderLoading`**, **`renderError`** for full UI control
+- Built-in **clear** control (optional) and default **error** UI with **Retry** (uses `refetch` from React Query)
 - ESM build with TypeScript declarations (`dist/index.js`, `dist/index.d.ts`)
 
 ## Installation
@@ -128,7 +130,7 @@ To use them correctly:
 - **Configure Tailwind** in your project and ensure this library’s files are **scanned** so those utilities are generated (see below).
 - **Define theme tokens** (CSS variables or Tailwind theme) compatible with shadcn/ui where you use semantic classes.
 
-**Overrides:** pass **`className`** on **`UiAutocomplete`** to adjust the **trigger** `<input>` (merged with the default classes). Other surfaces (popover, list, items) use built-in utilities; change them with **global CSS** targeting the rendered structure, or use **`usePaginatedSearch`** and your own components if you need full control.
+**Overrides:** pass **`className`** on **`UiAutocomplete`** for the **trigger** `<input>`. Use **`popoverContentClassName`**, **`commandListClassName`**, and **`clearButtonClassName`** for other surfaces (Tailwind only; no CSS files shipped). For deeper changes, target the rendered DOM with global CSS or use **`usePaginatedSearch`** with your own components.
 
 ### Tailwind: scanning this package
 
@@ -148,6 +150,56 @@ Published artifacts are **JavaScript in `dist/`**; Tailwind must still **see** t
 - **Tailwind v3:** add the package path to the `content` array (for example `./node_modules/my-autocomplete-lib/dist/**/*.{js,mjs}`) so the JIT picks up utilities used in the bundle.
 
 If classes are missing at runtime, widen your content/`@source` globs or add a safelist for the tokens you use.
+
+## Customization
+
+`UiAutocomplete` supports optional render props. All are **optional**; defaults keep previous behavior where applicable.
+
+| Prop | Purpose |
+|------|---------|
+| `getOptionLabel` | `(item) => string` — text for the trigger and list row when `renderOption` is not used. Default: `item.name`, or JSON fallback. |
+| `getOptionValue` | `(item) => string \| number` — stable identity for React keys, cmdk `value`, and selection compare. Default: `item.id`. |
+| `renderOption` | `(item, selected) => ReactNode` — custom row content; checkmark still shown when selected unless you hide it with your own layout. |
+| `renderEmpty` | `() => ReactNode` — when there are no rows, not loading, and no error. Default: icon + `emptyMessage`. |
+| `renderLoading` | `() => ReactNode` — when the first page is loading. Default: spinner + “Loading…”. |
+| `renderError` | `(error: unknown) => ReactNode` — when the infinite query fails. Default: message + **Retry** (calls `refetch`). |
+
+Extra Tailwind hooks (no CSS files added):
+
+- `popoverContentClassName` — popover panel
+- `commandListClassName` — scrollable list
+- `clearButtonClassName` — clear (×) control
+
+Set **`clearable={false}`** to hide the clear button.
+
+### `usePaginatedSearch` errors
+
+The hook returns **`error`** (from TanStack Query) and **`refetch`** when you build a fully custom UI. `UiAutocomplete` wires these into the default error panel.
+
+## Advanced usage
+
+Custom row layout and composite labels:
+
+```tsx
+<UiAutocomplete
+  queryKey={['users']}
+  fetchPage={fetchPage}
+  value={value}
+  onChange={setValue}
+  getOptionLabel={(u) =>
+    [u.first_name, u.last_name].filter(Boolean).join(' ') || u.name
+  }
+  renderOption={(item, selected) => (
+    <div className="flex flex-col gap-0.5 text-left">
+      <span className="font-medium">{item.name}</span>
+      {'email' in item && (
+        <span className="text-xs text-muted-foreground">{String(item.email)}</span>
+      )}
+    </div>
+  )}
+/>
+```
+
 
 ## API
 
@@ -170,6 +222,16 @@ If classes are missing at runtime, widen your content/`@source` globs or add a s
 | `triggerOnFocus` | `boolean` | `false` | If true, fetching is disabled until the popover opens. |
 | `additionalParams` | `Record<string, string \| number \| undefined>` | `{}` | Passed to `fetchPage` for extra filters. |
 | `debounceMs` | `number` | `500` | Debounce delay for search input. |
+| `getOptionLabel` | `(item: OptionType) => string` | see defaults | Label for trigger + list when `renderOption` omitted. |
+| `getOptionValue` | `(item: OptionType) => string \| number` | `item.id` | Identity for keys, cmdk value, selection. |
+| `renderOption` | `(item, selected) => ReactNode` | — | Custom option row. |
+| `renderEmpty` | `() => ReactNode` | — | Empty state. |
+| `renderLoading` | `() => ReactNode` | — | Initial load state. |
+| `renderError` | `(error: unknown) => ReactNode` | — | Error state. |
+| `clearable` | `boolean` | `true` | Show clear control when `value` is set. |
+| `popoverContentClassName` | `string` | — | Popover panel classes. |
+| `commandListClassName` | `string` | — | List container classes. |
+| `clearButtonClassName` | `string` | — | Clear button classes. |
 
 `ref` is forwarded to the underlying trigger `<input>` element.
 
@@ -203,6 +265,8 @@ Lower-level hook used by `UiAutocomplete`. Same pagination contract; use it to b
 | `isError` | True if the query is in error state. |
 | `searchTerm` | Current (non-debounced) search string. |
 | `handleSearchChange` | Update search term (e.g. bind to an input). |
+| `error` | The error from the failed query (when `isError`). |
+| `refetch` | Retry the query (used by the default error UI). |
 
 ### Types
 
@@ -210,6 +274,8 @@ Lower-level hook used by `UiAutocomplete`. Same pagination contract; use it to b
 - **`PaginatedApiResponse<T>`** — `{ data: T[]; pagination: { total; current_page; last_page; per_page } }`. **`fetchPage` is responsible for producing this shape** from your backend response (do not rely on unsafe casts if names differ).
 - **`FetchPaginatedPageArgs`** — `{ page, pageSize, searchTerm, searchParam, additionalParams, signal }`.
 - **`FetchPaginatedPage<T>`** — `(args: FetchPaginatedPageArgs) => Promise<PaginatedApiResponse<T>>`.
+
+`defaultGetOptionLabel` and `defaultGetOptionValue` are exported if you want to wrap or extend defaults.
 
 `useDebounce` is also exported for convenience.
 
@@ -222,6 +288,8 @@ If you previously passed a `resource` key into a config object and used a shared
 3. Maps the JSON (or client result) into **`PaginatedApiResponse`** so `data` is the array for the current page and `pagination` uses **`current_page`**, **`last_page`**, **`total`**, and **`per_page`** as defined in [Types](#types).
 
 Keep **`queryKey`** stable per logical list (and include extra segments when filters change) so React Query caches correctly.
+
+If you previously relied on built-in **`first_name` / `last_name`** or **`package`** display logic, provide the same behavior with **`getOptionLabel`** (and optionally **`renderOption`**) instead.
 
 ## Repository layout
 

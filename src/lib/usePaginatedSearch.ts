@@ -54,6 +54,8 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
     isFetchingNextPage,
     isLoading,
     isError,
+    error,
+    refetch,
   } = useInfiniteQuery({
     queryKey: [...queryKey, debouncedSearchTerm, additionalParams, pageSize, searchParam],
     queryFn: async ({ pageParam = 1, signal }) => {
@@ -110,7 +112,10 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
     isFetchingNextPage,
     isLoading,
     isError,
+    /** Present when `isError` is true; use for custom `renderError` or logging */
+    error,
     searchTerm,
     handleSearchChange,
+    refetch,
   }
 }
