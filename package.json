@@ -1,11 +1,12 @@
 {
-  "name": "my-autocomplete-lib",
-  "private": true,
-  "version": "0.0.0",
+  "name": "npm view react-remote-combo",
+  "private": false,
+  "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "license": "MIT",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,7 +16,20 @@
   },
   "files": ["dist"],
   "sideEffects": false,
-  "scripts": {
+  "keywords": [
+  "react",
+  "autocomplete",
+  "search",
+  "pagination",
+  "infinite-scroll",
+  "combobox"
+],
+"repository": {
+  "type": "git",
+  "url": "https://github.com/yourname/your-repo"
+},
+"description": "Reusable remote autocomplete with pagination for React",
+"scripts": {
     "dev": "vite",
     "build": "tsc -b && npm run build:lib",
     "build:lib": "vite build --config vite.lib.config.ts",
