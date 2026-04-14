@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useImperativeHandle, useMemo } from 'react'
+import React, { useRef, useState, useCallback, useImperativeHandle, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'cmdk'
 import { Loader, Check, ChevronRight, Info, ChevronDown, X } from 'lucide-react'
@@ -112,6 +112,8 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     const displayText = value != null ? labelOf(value) : ''
 
     const inputRef = useRef<HTMLInputElement>(null)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [isRtl, setIsRtl] = useState(false)
 
     const {
       options,
@@ -137,6 +139,22 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     })
 
     useImperativeHandle(ref, () => inputRef.current!)
+
+    useEffect(() => {
+      const readDirection = () => {
+        const root = containerRef.current
+        if (!root) return
+
+        const elementDir = root.closest('[dir]')?.getAttribute('dir')
+        const documentDir = document?.documentElement?.getAttribute('dir')
+        const dir = (elementDir || documentDir || 'ltr').toLowerCase()
+        setIsRtl(dir === 'rtl')
+      }
+
+      readDirection()
+      window.addEventListener('resize', readDirection)
+      return () => window.removeEventListener('resize', readDirection)
+    }, [])
 
     const isOptionSelected = useCallback(
       (opt: OptionType) =>
@@ -169,7 +187,17 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     )
 
     const showClear = clearable && value != null && !disabled
-    const triggerRightPadding = showClear ? 'pr-20' : 'pr-10'
+    const triggerPaddingStyle = {
+      paddingInlineEnd: showClear ? '5rem' : '2.5rem',
+    } as const
+
+    const clearOffsetStyle = {
+      insetInlineEnd: '2.25rem',
+    } as const
+
+    const iconOffsetStyle = {
+      insetInlineEnd: '0.75rem',
+    } as const
 
     const defaultLoading = (
       <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
@@ -186,7 +214,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     )
 
     return (
-      <div className="">
+      <div ref={containerRef} className="">
         <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : handleOpenChange}>
           <PopoverTrigger asChild disabled={disabled}>
             <div className="relative w-full">
@@ -194,7 +222,8 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                 ref={inputRef}
                 value={displayText}
                 placeholder={placeholder}
-                className={cn('w-full', triggerRightPadding, className, disabled && 'cursor-not-allowed opacity-50')}
+                className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
+                style={triggerPaddingStyle}
                 disabled={disabled}
                 readOnly
                 role="combobox"
@@ -208,9 +237,10 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                   tabIndex={-1}
                   aria-label="Clear selection"
                   className={cn(
-                    'absolute right-9 top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground',
+                    'absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground',
                     clearButtonClassName,
                   )}
+                  style={clearOffsetStyle}
                   onPointerDown={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -226,16 +256,17 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
               )}
               {!disabled &&
                 (isLoading ? (
-                  <Loader className="h-4 w-4 animate-spin absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Loader className="h-4 w-4 animate-spin absolute top-1/2 -translate-y-1/2 text-muted-foreground" style={iconOffsetStyle} />
                 ) : options.length > 0 ? (
                   <ChevronDown
                     className={cn(
-                      'h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-transform pointer-events-none',
+                      'h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground transition-transform pointer-events-none',
                       open && 'rotate-180',
                     )}
+                    style={iconOffsetStyle}
                   />
                 ) : (
-                  <ChevronRight className="h-4 w-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  <ChevronRight className="h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" style={iconOffsetStyle} />
                 ))}
             </div>
           </PopoverTrigger>
@@ -254,7 +285,14 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                   value={searchTerm}
                   onValueChange={handleSearchChange}
                   placeholder={placeholder}
-                  className="h-9 border-b border-input px-3 text-sm outline-none [&_[cmdk-input-wrapper]]:flex [&_[cmdk-input-wrapper]]:items-center [&_[cmdk-input-wrapper]_svg]:order-2 [&_[cmdk-input-wrapper]_svg]:ml-auto [&_[cmdk-input-wrapper]_svg]:mr-3 [&_[cmdk-input-wrapper]_input]:pr-2"
+                  className={cn(
+                    'h-9 border-b border-input px-3 text-sm outline-none',
+                    '[&_.cmdk-input-wrapper]:flex [&_.cmdk-input-wrapper]:items-center',
+                    '[&_.cmdk-input-wrapper_svg]:order-2 [&_.cmdk-input-wrapper_svg]:shrink-0',
+                    isRtl
+                      ? '[&_.cmdk-input-wrapper_svg]:mr-auto [&_.cmdk-input-wrapper_svg]:ml-3 [&_.cmdk-input-wrapper_input]:pl-2'
+                      : '[&_.cmdk-input-wrapper_svg]:ml-auto [&_.cmdk-input-wrapper_svg]:mr-3 [&_.cmdk-input-wrapper_input]:pr-2',
+                  )}
                 />
                 <CommandList
                     onScroll={handleScroll}

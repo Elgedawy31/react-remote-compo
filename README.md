@@ -134,6 +134,8 @@ Optional **`popoverContentClassName`**, **`commandListClassName`**, and **`clear
 
 Set up **theme tokens** (CSS variables or Tailwind theme extensions) in your app if you use semantic color classes.
 
+Icon placement is **direction-aware**: in LTR and RTL, icons align to **inline-end** while placeholder/text remain on **inline-start**.
+
 ### Tailwind: scanning this package
 
 Published code lives under **`dist/`** as JavaScript; Tailwind must still **see** the embedded class strings:
