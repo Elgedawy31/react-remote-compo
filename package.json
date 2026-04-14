@@ -1,7 +1,7 @@
 {
   "name": "react-remote-combo",
   "private": false,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -14,22 +14,24 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "keywords": [
-  "react",
-  "autocomplete",
-  "search",
-  "pagination",
-  "infinite-scroll",
-  "combobox"
-],
-"repository": {
-  "type": "git",
-  "url": "https://github.com/elgedawy31/react-remote-compo"
-},
-"description": "Reusable remote autocomplete with pagination for React",
-"scripts": {
+    "react",
+    "autocomplete",
+    "search",
+    "pagination",
+    "infinite-scroll",
+    "combobox"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elgedawy31/react-remote-compo.git"
+  },
+  "description": "Reusable remote autocomplete with pagination for React",
+  "scripts": {
     "dev": "vite",
     "build": "tsc -b && npm run build:lib",
     "build:lib": "vite build --config vite.lib.config.ts",
