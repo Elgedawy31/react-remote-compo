@@ -199,9 +199,14 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
       insetInlineEnd: '0.75rem',
     } as const
 
+    // Pure CSS fallback spinner (independent from Tailwind animate utilities)
+    const spinnerStyle = {
+      animation: 'uiAutocompleteSpin 0.9s linear infinite',
+    } as const
+
     const defaultLoading = (
       <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
-        <Loader className="size-5 animate-spin shrink-0" />
+        <Loader className="size-5 shrink-0" style={spinnerStyle} />
         <span>Loading…</span>
       </div>
     )
@@ -215,6 +220,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
 
     return (
       <div ref={containerRef} className="">
+        <style>{`@keyframes uiAutocompleteSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : handleOpenChange}>
           <PopoverTrigger asChild disabled={disabled}>
             <div className="relative w-full">
@@ -256,7 +262,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
               )}
               {!disabled &&
                 (isLoading ? (
-                  <Loader className="h-4 w-4 animate-spin absolute top-1/2 -translate-y-1/2 text-muted-foreground" style={iconOffsetStyle} />
+                  <Loader className="h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground" style={{ ...iconOffsetStyle, ...spinnerStyle }} />
                 ) : options.length > 0 ? (
                   <ChevronDown
                     className={cn(
@@ -343,7 +349,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                         {hasNextPage &&
                           (isFetchingNextPage ? (
                             <CommandItem className="flex items-center justify-center p-2">
-                              <Loader className="h-4 w-4 animate-spin" />
+                              <Loader className="h-4 w-4" style={spinnerStyle} />
                             </CommandItem>
                           ) : (
                             <CommandItem
