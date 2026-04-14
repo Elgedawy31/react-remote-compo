@@ -66,7 +66,7 @@ import {
   type FetchPaginatedPageArgs,
   type OptionType,
   type PaginatedApiResponse,
-} from 'my-autocomplete-lib'
+} from 'react-remote-compo'
 
 const queryClient = new QueryClient()
 

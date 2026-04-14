@@ -254,7 +254,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                   value={searchTerm}
                   onValueChange={handleSearchChange}
                   placeholder={placeholder}
-                  className="h-9 border-b border-input px-3 text-sm outline-none"
+                  className="h-9 border-b border-input px-3 text-sm outline-none [&_[cmdk-input-wrapper]]:flex [&_[cmdk-input-wrapper]]:items-center [&_[cmdk-input-wrapper]_svg]:order-2 [&_[cmdk-input-wrapper]_svg]:ml-auto [&_[cmdk-input-wrapper]_svg]:mr-3 [&_[cmdk-input-wrapper]_input]:pr-2"
                 />
                 <CommandList
                     onScroll={handleScroll}
