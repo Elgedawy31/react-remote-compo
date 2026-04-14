@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback, useImperativeHandle, useMemo, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'cmdk'
-import { Loader, Check, ChevronRight, Info, ChevronDown, X } from 'lucide-react'
+import { Loader, Check, Info, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { Input } from './primitives/input'
 import { Popover, PopoverContent, PopoverTrigger } from './primitives/popover'
 import { cn } from './cn'
@@ -188,7 +188,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
 
     const showClear = clearable && value != null && !disabled
     const triggerPaddingStyle = {
-      paddingInlineEnd: showClear ? '5rem' : '2.5rem',
+      paddingInlineEnd: showClear ? '5rem' : '2.75rem',
     } as const
 
     const clearOffsetStyle = {
@@ -263,16 +263,30 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
               {!disabled &&
                 (isLoading ? (
                   <Loader className="h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground" style={{ ...iconOffsetStyle, ...spinnerStyle }} />
-                ) : options.length > 0 ? (
-                  <ChevronDown
-                    className={cn(
-                      'h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground transition-transform pointer-events-none',
-                      open && 'rotate-180',
-                    )}
-                    style={iconOffsetStyle}
-                  />
                 ) : (
-                  <ChevronRight className="h-4 w-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" style={iconOffsetStyle} />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    aria-label={open ? 'Collapse options' : 'Expand options'}
+                    className="absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                    style={iconOffsetStyle}
+                    onPointerDown={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setOpen((v) => !v)
+                    }}
+                  >
+                    <ChevronDown
+                      className={cn(
+                        'h-4 w-4 transition-transform duration-200',
+                        open && 'rotate-180',
+                      )}
+                    />
+                  </button>
                 ))}
             </div>
           </PopoverTrigger>
@@ -293,8 +307,8 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                   placeholder={placeholder}
                   className={cn(
                     'h-9 border-b border-input px-3 text-sm outline-none',
-                    '[&_.cmdk-input-wrapper]:flex [&_.cmdk-input-wrapper]:items-center',
-                    '[&_.cmdk-input-wrapper_svg]:order-2 [&_.cmdk-input-wrapper_svg]:shrink-0',
+                    '[&_.cmdk-input-wrapper]:flex [&_.cmdk-input-wrapper]:w-full [&_.cmdk-input-wrapper]:items-center',
+                    '[&_.cmdk-input-wrapper_svg]:order-2 [&_.cmdk-input-wrapper_svg]:shrink-0 [&_.cmdk-input]:w-full',
                     isRtl
                       ? '[&_.cmdk-input-wrapper_svg]:mr-auto [&_.cmdk-input-wrapper_svg]:ml-3 [&_.cmdk-input-wrapper_input]:pl-2'
                       : '[&_.cmdk-input-wrapper_svg]:ml-auto [&_.cmdk-input-wrapper_svg]:mr-3 [&_.cmdk-input-wrapper_input]:pr-2',
@@ -335,7 +349,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                                 onChange(option)
                                 setOpen(false)
                               }}
-                              className="relative flex w-full cursor-default select-none items-center justify-between gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+                              className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none transition-colors duration-150 hover:bg-accent/70 hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                             >
                               {renderOption ? renderOption(option, selected) : labelOf(option)}
                               {selected && (
@@ -354,7 +368,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                           ) : (
                             <CommandItem
                               onSelect={() => fetchNextPage()}
-                              className="flex cursor-pointer items-center justify-center gap-2 rounded-sm py-1.5 text-sm text-primary hover:bg-accent hover:text-accent-foreground"
+                              className="flex cursor-pointer items-center justify-center gap-2 rounded-sm py-1.5 text-sm text-primary transition-colors duration-150 hover:bg-accent/70 hover:text-accent-foreground"
                             >
                               Load More
                               <ChevronRight className="h-4 w-4" />
