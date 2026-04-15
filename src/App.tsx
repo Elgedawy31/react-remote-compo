@@ -24,11 +24,20 @@ export default function App() {
         signal: args.signal,
       })
       const users = (await res.json()) as UserRow[]
+      const expandedUsers = Array.from({ length: 10 }, (_, groupIndex) =>
+        users.map((user, index) => ({
+          ...user,
+          id: groupIndex * users.length + index + 1,
+          name: `${user.name} ${groupIndex + 1}`,
+          email: user.email.replace('@', `+${groupIndex + 1}@`),
+          username: `${user.username}${groupIndex + 1}`,
+        })),
+      ).flat()
 
       const term = args.searchTerm.trim().toLowerCase()
       const filtered = term
-        ? users.filter((user) => user.name.toLowerCase().includes(term))
-        : users
+        ? expandedUsers.filter((user) => user.name.toLowerCase().includes(term))
+        : expandedUsers
 
       const start = (args.page - 1) * args.pageSize
       const end = start + args.pageSize
@@ -57,6 +66,7 @@ export default function App() {
           value={value}
           onChange={setValue}
           placeholder="Search users..."
+          pageSize={10}
           className="demo-input"
           popoverContentClassName="demo-popover"
           commandListClassName="demo-list"

@@ -268,7 +268,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
 
     const handleScroll = useCallback(
       (e: React.UIEvent<HTMLDivElement>) => {
-        const target = e.target as HTMLDivElement
+        const target = e.currentTarget
         if (
           target.scrollHeight - target.scrollTop <= target.clientHeight + 50 &&
           hasNextPage &&
@@ -415,7 +415,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
           {!disabled && (
             <PopoverContent
               className={cn(
-                'w-full p-0 border border-input max-h-72 overflow-hidden',
+                'w-full p-0 border border-input max-h-80',
                 popoverContentClassName,
               )}
               align="start"
@@ -438,7 +438,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                 />
                 <CommandList
                     onScroll={handleScroll}
-                    className={cn('p-0 max-h-64 overflow-y-auto', commandListClassName)}
+                    className={cn('p-0 pr-1 pb-1 max-h-64 overflow-y-auto', commandListClassName)}
                   >
                     {isError ? (
                       renderError ? (
