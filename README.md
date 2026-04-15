@@ -1,7 +1,11 @@
 # react-remote-combo
 
-Headless-first remote autocomplete for React with async pagination and debounced search.  
-Use the optional built-in UI (`UiAutocomplete`) or build a fully custom experience with `usePaginatedSearch`.
+[![npm version](https://img.shields.io/npm/v/react-remote-combo.svg)](https://www.npmjs.com/package/react-remote-combo)
+[![npm downloads](https://img.shields.io/npm/dw/react-remote-combo.svg)](https://www.npmjs.com/package/react-remote-combo)
+[![license](https://img.shields.io/npm/l/react-remote-combo.svg)](https://github.com/elgedawy31/react-remote-combo/blob/main/LICENSE)
+
+Headless-first remote autocomplete for React with debounced search and paginated results.  
+Use the optional UI component (`UiAutocomplete`) or stay fully headless with hooks.
 
 ## Features
 
@@ -19,11 +23,17 @@ Use the optional built-in UI (`UiAutocomplete`) or build a fully custom experien
 npm install react-remote-combo
 ```
 
+> UI dependencies are optional. Use the headless hook for full control.
+
 ### Optional UI dependencies (for `UiAutocomplete`)
 
 ```bash
 npm install @radix-ui/react-popover cmdk
 ```
+
+## Demo
+
+Try it live: https://codesandbox.io/p/sandbox/gw72f4
 
 ## Quick Example
 
@@ -138,3 +148,8 @@ const {
   fetchPage,
 })
 ```
+
+## Links
+
+- GitHub: https://github.com/elgedawy31/react-remote-combo
+- npm: https://www.npmjs.com/package/react-remote-combo

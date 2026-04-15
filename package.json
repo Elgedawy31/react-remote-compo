@@ -20,17 +20,20 @@
   "sideEffects": false,
   "keywords": [
     "react",
-    "autocomplete",
-    "search",
-    "pagination",
+    "react-autocomplete",
+    "headless-ui",
     "infinite-scroll",
-    "combobox"
+    "combobox",
+    "async-select",
+    "react-query",
+    "autocomplete",
+    "search"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/elgedawy31/react-remote-compo.git"
+    "url": "git+https://github.com/elgedawy31/react-remote-combo.git"
   },
-  "description": "Reusable remote autocomplete with pagination for React",
+  "description": "Headless remote autocomplete for React with pagination, debounced search, and optional UI.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && npm run build:lib",
