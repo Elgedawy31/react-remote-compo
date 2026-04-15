@@ -69,6 +69,43 @@ const DefaultChevronDown = (
   </svg>
 )
 
+const DefaultArrowRight = (
+  <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24">
+    <path
+      d="M9 6l6 6-6 6"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+function DefaultLoadingState({
+  icon,
+  spinnerStyle,
+}: {
+  icon: ReactNode
+  spinnerStyle: React.CSSProperties
+}) {
+  return (
+    <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
+      <span className="inline-flex items-center justify-center" style={spinnerStyle}>
+        {icon}
+      </span>
+      <span>Loading…</span>
+    </div>
+  )
+}
+
+function DefaultEmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+      <CommandEmpty>{message}</CommandEmpty>
+    </div>
+  )
+}
+
 function DefaultQueryError({
   error,
   onRetry,
@@ -272,19 +309,10 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     } as const
 
     const defaultLoading = (
-      <div className="flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground">
-        <span className="inline-flex items-center justify-center" style={spinnerStyle}>
-          {icons?.loading ?? DefaultLoadingIcon}
-        </span>
-        <span>Loading…</span>
-      </div>
+      <DefaultLoadingState icon={icons?.loading ?? DefaultLoadingIcon} spinnerStyle={spinnerStyle} />
     )
 
-    const defaultEmpty = (
-      <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
-        <CommandEmpty>{emptyMessage}</CommandEmpty>
-      </div>
-    )
+    const defaultEmpty = <DefaultEmptyState message={emptyMessage} />
 
     return (
       <div ref={containerRef} className="">
@@ -451,7 +479,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                               className="flex cursor-pointer items-center justify-center gap-2 rounded-sm py-1.5 text-sm text-primary transition-colors duration-150 hover:bg-accent/70 hover:text-accent-foreground"
                             >
                               Load More
-                              <span aria-hidden="true">›</span>
+                              <span aria-hidden="true">{DefaultArrowRight}</span>
                             </CommandItem>
                           ))}
                       </CommandGroup>
