@@ -16,7 +16,13 @@ Use the optional built-in UI (`UiAutocomplete`) or build a fully custom experien
 ## Installation
 
 ```bash
-npm install react-remote-combo react react-dom @tanstack/react-query @radix-ui/react-popover cmdk
+npm install react-remote-combo
+```
+
+### Optional UI dependencies (for `UiAutocomplete`)
+
+```bash
+npm install @radix-ui/react-popover cmdk
 ```
 
 ## Quick Example
