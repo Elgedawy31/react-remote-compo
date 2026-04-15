@@ -1,7 +1,7 @@
 {
   "name": "react-remote-combo",
   "private": false,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -43,8 +43,7 @@
     "react-dom": "^18 || ^19",
     "@tanstack/react-query": "^5",
     "@radix-ui/react-popover": "^1",
-    "cmdk": "^1",
-    "lucide-react": ">=0.400.0"
+    "cmdk": "^1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

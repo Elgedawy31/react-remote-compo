@@ -1,7 +1,5 @@
-import { useState } from 'react'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import type { PaginatedApiResponse, OptionType } from './types'
-import { useDebounce } from './useDebounce'
+import { useRemoteCombo } from './useRemoteComboCore'
 
 export interface FetchPaginatedPageArgs {
   page: number
@@ -28,7 +26,6 @@ export interface UsePaginatedSearchOptions<T extends Record<string, unknown>> {
   searchParam?: string
   nameKey?: string
   idKey?: string
-  enabled?: boolean
   additionalParams?: Record<string, string | number | undefined>
   debounceMs?: number
 }
@@ -40,13 +37,9 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
   searchParam = 'name',
   nameKey = 'name',
   idKey = 'id',
-  enabled = true,
   additionalParams = {},
   debounceMs = 500,
 }: UsePaginatedSearchOptions<T>) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const debouncedSearchTerm = useDebounce(searchTerm, debounceMs)
-
   const {
     data,
     fetchNextPage,
@@ -55,14 +48,23 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
     isLoading,
     isError,
     error,
+    search,
+    setSearch,
     refetch,
-  } = useInfiniteQuery({
-    queryKey: [...queryKey, debouncedSearchTerm, additionalParams, pageSize, searchParam],
-    queryFn: async ({ pageParam = 1, signal }) => {
-      const response = await fetchPage({
-        page: pageParam as number,
+  } = useRemoteCombo<T, PaginatedApiResponse<T>>({
+    queryKey: [
+      ...queryKey,
+      {
+        additionalParams,
         pageSize,
-        searchTerm: debouncedSearchTerm,
+        searchParam,
+      },
+    ],
+    fetchPage: async ({ page, search, signal }) => {
+      const response = await fetchPage({
+        page,
+        pageSize,
+        searchTerm: search,
         searchParam,
         additionalParams,
         signal,
@@ -74,7 +76,6 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
 
       return response
     },
-    initialPageParam: 1,
     getNextPageParam: (lastPage) => {
       const pagination = lastPage?.pagination
       if (pagination && pagination.current_page < pagination.last_page) {
@@ -82,28 +83,14 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
       }
       return undefined
     },
-    select: (infiniteData) => ({
-      ...infiniteData,
-      pages: infiniteData.pages.map((page) => {
-        const pageData = Array.isArray(page.data) ? page.data : []
-        return {
-          ...page,
-          data: pageData.map((item) => ({
-            id: item[idKey as keyof T] as string | number,
-            name: item[nameKey as keyof T] as string,
-            ...item,
-          })) as OptionType[],
-        }
-      }),
-    }),
-    enabled,
+    debounceMs,
   })
 
-  const options = data?.pages.flatMap((page) => page.data) ?? []
-
-  const handleSearchChange = (value: string) => {
-    setSearchTerm(value)
-  }
+  const options = data.map((item) => ({
+    id: String(item[idKey as keyof T]),
+    name: String(item[nameKey as keyof T]),
+    ...item,
+  })) as OptionType[]
 
   return {
     options,
@@ -114,8 +101,8 @@ export function usePaginatedSearch<T extends Record<string, unknown>>({
     isError,
     /** Present when `isError` is true; use for custom `renderError` or logging */
     error,
-    searchTerm,
-    handleSearchChange,
+    searchTerm: search,
+    handleSearchChange: setSearch,
     refetch,
   }
 }
