@@ -327,6 +327,20 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                 className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
                 style={triggerPaddingStyle}
                 disabled={disabled}
+                onPointerDown={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!disabled) {
+                    setOpen(true)
+                  }
+                }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!disabled) {
+                    setOpen(true)
+                  }
+                }}
                 onFocus={() => {
                   if (triggerOnFocus) {
                     setOpen(true)
@@ -364,7 +378,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
               {!disabled &&
                 (isLoading ? (
                   <span
-                    className="absolute top-1/2 -translate-y-1/2 text-muted-foreground"
+                    className="absolute -top-0 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground"
                     style={{ ...iconOffsetStyle, ...spinnerStyle }}
                   >
                     {icons?.loading ?? DefaultLoadingIcon}
