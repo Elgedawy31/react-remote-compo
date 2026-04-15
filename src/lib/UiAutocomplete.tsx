@@ -10,7 +10,7 @@ import { defaultGetOptionLabel, defaultGetOptionValue } from './optionDefaults'
 
 const DefaultLoadingIcon = (
   <svg
-    className="h-4 w-4 animate-spin"
+    className="h-4 w-4 animate-spin text-gray-500"
     viewBox="0 0 24 24"
     fill="none"
   >
@@ -42,11 +42,15 @@ const DefaultClearIcon = (
 )
 
 const DefaultCheckIcon = (
-  <svg className="h-4 w-4" viewBox="0 0 24 24">
+  <svg
+    className="h-4 w-4 text-blue-600"
+    viewBox="0 0 24 24"
+    fill="none"
+  >
     <path
       d="M5 13l4 4L19 7"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -54,7 +58,7 @@ const DefaultCheckIcon = (
 )
 
 const DefaultChevronDown = (
-  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
+  <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none">
     <path
       d="M6 9l6 6 6-6"
       stroke="currentColor"
@@ -429,7 +433,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                             >
                               {renderOption ? renderOption(option, selected) : labelOf(option)}
                               {selected && (
-                                <span className="absolute right-2 flex size-3.5 items-center justify-center">
+                                <span className="absolute right-2 flex size-5 items-center justify-center rounded-full bg-blue-100">
                                   {icons?.check ?? DefaultCheckIcon}
                                 </span>
                               )}
