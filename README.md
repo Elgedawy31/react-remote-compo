@@ -57,18 +57,39 @@ function App() {
   const fetchPage = async (
     args: FetchPaginatedPageArgs,
   ): Promise<PaginatedApiResponse<Record<string, unknown>>> => {
-    const params = new URLSearchParams({
-      page: String(args.page),
-      per_page: String(args.pageSize),
-    })
-    if (args.searchTerm) params.set(args.searchParam, args.searchTerm)
+    type UserRow = { id: number; name: string; email: string; username: string }
 
-    const res = await fetch(`/api/items?${params}`, { signal: args.signal })
-    const json = await res.json()
+    const res = await fetch('https://jsonplaceholder.typicode.com/users', {
+      signal: args.signal,
+    })
+    const users = (await res.json()) as UserRow[]
+    const expandedUsers = Array.from({ length: 10 }, (_, groupIndex) =>
+      users.map((user, index) => ({
+        ...user,
+        id: groupIndex * users.length + index + 1,
+        name: `${user.name} ${groupIndex + 1}`,
+        email: user.email.replace('@', `+${groupIndex + 1}@`),
+        username: `${user.username}${groupIndex + 1}`,
+      })),
+    ).flat()
+
+    const term = args.searchTerm.trim().toLowerCase()
+    const filtered = term
+      ? expandedUsers.filter((user) => user.name.toLowerCase().includes(term))
+      : expandedUsers
+    const start = (args.page - 1) * args.pageSize
+    const end = start + args.pageSize
+    const pageData = filtered.slice(start, end)
+    const lastPage = Math.max(1, Math.ceil(filtered.length / args.pageSize))
 
     return {
-      data: json.data,
-      pagination: json.pagination,
+      data: pageData,
+      pagination: {
+        total: filtered.length,
+        current_page: args.page,
+        last_page: lastPage,
+        per_page: args.pageSize,
+      },
     }
   }
 
@@ -80,6 +101,7 @@ function App() {
         value={value}
         onChange={setValue}
         placeholder="Search items..."
+        pageSize={10}
       />
     </QueryClientProvider>
   )
