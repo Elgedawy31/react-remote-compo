@@ -1,6 +1,6 @@
-import React, { useRef, useState, useCallback, useImperativeHandle, useMemo, useEffect } from 'react'
+import React, { useRef, useState, useCallback, useImperativeHandle, useMemo } from 'react'
 import type { ReactNode } from 'react'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'cmdk'
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from 'cmdk'
 import { Input } from './primitives/input'
 import { Popover, PopoverContent, PopoverTrigger } from './primitives/popover'
 import { cn } from './cn'
@@ -214,11 +214,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     )
     const valueOf = useMemo(() => getOptionValue ?? defaultGetOptionValue, [getOptionValue])
 
-    const displayText = value != null ? labelOf(value) : ''
-
     const inputRef = useRef<HTMLInputElement>(null)
-    const containerRef = useRef<HTMLDivElement>(null)
-    const [isRtl, setIsRtl] = useState(false)
 
     const {
       options,
@@ -243,22 +239,6 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     })
 
     useImperativeHandle(ref, () => inputRef.current!)
-
-    useEffect(() => {
-      const readDirection = () => {
-        const root = containerRef.current
-        if (!root) return
-
-        const elementDir = root.closest('[dir]')?.getAttribute('dir')
-        const documentDir = document?.documentElement?.getAttribute('dir')
-        const dir = (elementDir || documentDir || 'ltr').toLowerCase()
-        setIsRtl(dir === 'rtl')
-      }
-
-      readDirection()
-      window.addEventListener('resize', readDirection)
-      return () => window.removeEventListener('resize', readDirection)
-    }, [])
 
     const isOptionSelected = useCallback(
       (opt: OptionType) =>
@@ -315,38 +295,38 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     const defaultEmpty = <DefaultEmptyState message={emptyMessage} />
 
     return (
-      <div ref={containerRef} className="">
+      <div className="">
         <style>{`@keyframes uiAutocompleteSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : handleOpenChange}>
           <PopoverTrigger asChild disabled={disabled}>
             <div className="relative w-full">
               <Input
                 ref={inputRef}
-                value={displayText}
+                value={searchTerm}
                 placeholder={placeholder}
                 className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
                 style={triggerPaddingStyle}
                 disabled={disabled}
                 onPointerDown={(e) => {
-                  e.preventDefault()
                   e.stopPropagation()
                   if (!disabled) {
                     setOpen(true)
                   }
                 }}
                 onClick={(e) => {
-                  e.preventDefault()
                   e.stopPropagation()
                   if (!disabled) {
                     setOpen(true)
                   }
+                }}
+                onChange={(e) => {
+                  handleSearchChange(e.target.value)
                 }}
                 onFocus={() => {
                   if (triggerOnFocus) {
                     setOpen(true)
                   }
                 }}
-                readOnly
                 role="combobox"
                 aria-autocomplete="list"
                 aria-expanded={open}
@@ -423,19 +403,6 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
               style={{ width: 'var(--radix-popover-trigger-width)' }}
             >
               <Command shouldFilter={false} className="w-full">
-                <CommandInput
-                  value={searchTerm}
-                  onValueChange={handleSearchChange}
-                  placeholder={placeholder}
-                  className={cn(
-                    'h-9 border-b border-input px-3 text-sm outline-none',
-                    '[&_.cmdk-input-wrapper]:flex [&_.cmdk-input-wrapper]:w-full [&_.cmdk-input-wrapper]:items-center',
-                    '[&_.cmdk-input-wrapper_svg]:order-2 [&_.cmdk-input-wrapper_svg]:shrink-0 [&_.cmdk-input]:w-full',
-                    isRtl
-                      ? '[&_.cmdk-input-wrapper_svg]:mr-auto [&_.cmdk-input-wrapper_svg]:ml-3 [&_.cmdk-input-wrapper_input]:pl-2'
-                      : '[&_.cmdk-input-wrapper_svg]:ml-auto [&_.cmdk-input-wrapper_svg]:mr-3 [&_.cmdk-input-wrapper_input]:pr-2',
-                  )}
-                />
                 <CommandList
                     onScroll={handleScroll}
                     className={cn('p-0 pr-1 pb-1 max-h-64 overflow-y-auto', commandListClassName)}
