@@ -208,6 +208,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     ref,
   ) => {
     const [open, setOpen] = useState(false)
+    const [isTyping, setIsTyping] = useState(false)
     const labelOf = useMemo(
       () => getOptionLabel ?? defaultGetOptionLabel,
       [getOptionLabel],
@@ -237,6 +238,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
       additionalParams,
       debounceMs,
     })
+    const displayValue = isTyping ? searchTerm : value != null ? labelOf(value) : ''
 
     useImperativeHandle(ref, () => inputRef.current!)
 
@@ -263,6 +265,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
     const handleOpenChange = useCallback(
       (newOpen: boolean) => {
         if (!newOpen) {
+          setIsTyping(false)
           handleSearchChange('')
         }
         setOpen(newOpen)
@@ -302,7 +305,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
             <div className="relative w-full">
               <Input
                 ref={inputRef}
-                value={searchTerm}
+                value={displayValue}
                 placeholder={placeholder}
                 className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
                 style={triggerPaddingStyle}
@@ -320,6 +323,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                   }
                 }}
                 onChange={(e) => {
+                  setIsTyping(true)
                   handleSearchChange(e.target.value)
                 }}
                 onFocus={() => {
@@ -436,6 +440,8 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                               value={v}
                               onSelect={() => {
                                 onChange(option)
+                                setIsTyping(false)
+                                handleSearchChange('')
                                 setOpen(false)
                               }}
                               className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none transition-colors duration-150 hover:bg-accent/70 hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
