@@ -15,6 +15,7 @@ type UserRow = {
 
 export default function App() {
   const [value, setValue] = useState<OptionType | null>(null)
+  const [multiValue, setMultiValue] = useState<OptionType[]>([])
 
   const fetchPage = useCallback(
     async (
@@ -59,7 +60,7 @@ export default function App() {
 
   return (
     <main className="app max-w-4xl mx-auto mt-96">
-      
+      <div className="panel" style={{ display: 'grid', gap: 16 }}>
         <UiAutocomplete
           queryKey={['demo-users']}
           fetchPage={fetchPage}
@@ -71,6 +72,19 @@ export default function App() {
           popoverContentClassName="demo-popover"
           commandListClassName="demo-list"
         />
+        <UiAutocomplete
+          multiple
+          queryKey={['demo-users-multi']}
+          fetchPage={fetchPage}
+          value={multiValue}
+          onChange={setMultiValue}
+          placeholder="Search and select multiple users..."
+          pageSize={10}
+          className="demo-input"
+          popoverContentClassName="demo-popover"
+          commandListClassName="demo-list"
+        />
+      </div>
     </main>
   )
 }

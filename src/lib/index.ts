@@ -6,5 +6,10 @@ export {
   type FetchPaginatedPage,
   type FetchPaginatedPageArgs,
 } from './usePaginatedSearch'
-export type { OptionType, PaginatedApiResponse } from './types'
+export type {
+  OptionType,
+  PaginatedApiResponse,
+  SingleSelectValue,
+  MultiSelectValue,
+} from './types'
 export { useDebounce } from './useDebounce'

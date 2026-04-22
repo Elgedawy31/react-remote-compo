@@ -4,6 +4,9 @@ export interface OptionType {
   package?: string
 }
 
+export type SingleSelectValue = OptionType | null
+export type MultiSelectValue = OptionType[]
+
 export interface PaginatedApiResponse<T> {
   data: T[]
   pagination: {

@@ -5,7 +5,7 @@ import { Input } from './primitives/input'
 import { Popover, PopoverContent, PopoverTrigger } from './primitives/popover'
 import { cn } from './cn'
 import { usePaginatedSearch, type FetchPaginatedPage } from './usePaginatedSearch'
-import type { OptionType } from './types'
+import type { MultiSelectValue, OptionType, SingleSelectValue } from './types'
 import { defaultGetOptionLabel, defaultGetOptionValue } from './optionDefaults'
 
 const DefaultLoadingIcon = (
@@ -129,11 +129,9 @@ function DefaultQueryError({
   )
 }
 
-export interface UiAutocompleteProps {
+interface UiAutocompleteBaseProps {
   queryKey: readonly unknown[]
   fetchPage: FetchPaginatedPage<Record<string, unknown>>
-  onChange: (value: OptionType | null) => void
-  value: OptionType | null
   placeholder?: string
   pageSize?: number
   searchParam?: string
@@ -175,6 +173,20 @@ export interface UiAutocompleteProps {
   }
 }
 
+interface UiAutocompleteSingleProps extends UiAutocompleteBaseProps {
+  multiple?: false
+  value: SingleSelectValue
+  onChange: (value: SingleSelectValue) => void
+}
+
+interface UiAutocompleteMultiProps extends UiAutocompleteBaseProps {
+  multiple: true
+  value: MultiSelectValue
+  onChange: (value: MultiSelectValue) => void
+}
+
+export type UiAutocompleteProps = UiAutocompleteSingleProps | UiAutocompleteMultiProps
+
 export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutocompleteProps>(
   (
     {
@@ -204,6 +216,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
       commandListClassName,
       clearButtonClassName,
       icons,
+      multiple = false,
     },
     ref,
   ) => {
@@ -238,14 +251,25 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
       additionalParams,
       debounceMs,
     })
-    const displayValue = isTyping ? searchTerm : value != null ? labelOf(value) : ''
+    const selectedItems = useMemo<OptionType[]>(
+      () => (Array.isArray(value) ? value : value != null ? [value] : []),
+      [value],
+    )
+    const selectedSingleValue = Array.isArray(value) ? null : value
+    const displayValue = multiple
+      ? searchTerm
+      : isTyping
+        ? searchTerm
+        : selectedSingleValue != null
+          ? labelOf(selectedSingleValue)
+          : ''
 
     useImperativeHandle(ref, () => inputRef.current!)
 
     const isOptionSelected = useCallback(
       (opt: OptionType) =>
-        value != null && String(valueOf(value)) === String(valueOf(opt)),
-      [value, valueOf],
+        selectedItems.some((item) => String(valueOf(item)) === String(valueOf(opt))),
+      [selectedItems, valueOf],
     )
 
     const handleScroll = useCallback(
@@ -273,7 +297,7 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
       [handleSearchChange],
     )
 
-    const showClear = clearable && value != null && !disabled
+    const showClear = clearable && selectedItems.length > 0 && !disabled
     const triggerPaddingStyle = {
       paddingInlineEnd: showClear ? '5rem' : '2.75rem',
     } as const
@@ -302,78 +326,51 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
         <style>{`@keyframes uiAutocompleteSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : handleOpenChange}>
           <PopoverTrigger asChild disabled={disabled}>
-            <div className="relative w-full">
-              <Input
-                ref={inputRef}
-                value={displayValue}
-                placeholder={placeholder}
-                className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
-                style={triggerPaddingStyle}
-                disabled={disabled}
-                onPointerDown={(e) => {
-                  e.stopPropagation()
-                  if (!disabled) {
-                    setOpen(true)
-                  }
-                }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (!disabled) {
-                    setOpen(true)
-                  }
-                }}
-                onChange={(e) => {
-                  setIsTyping(true)
-                  handleSearchChange(e.target.value)
-                }}
-                onFocus={() => {
-                  if (triggerOnFocus) {
-                    setOpen(true)
-                  }
-                }}
-                role="combobox"
-                aria-autocomplete="list"
-                aria-expanded={open}
-                aria-controls="autocomplete-list"
-              />
-              {showClear && (
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  aria-label="Clear selection"
-                  className={cn(
-                    'absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground',
-                    clearButtonClassName,
-                  )}
-                  style={clearOffsetStyle}
+            <div className="w-full">
+              <div className="relative">
+                <Input
+                  ref={inputRef}
+                  value={displayValue}
+                  placeholder={placeholder}
+                  className={cn('w-full', className, disabled && 'cursor-not-allowed opacity-50')}
+                  style={multiple ? undefined : triggerPaddingStyle}
+                  disabled={disabled}
                   onPointerDown={(e) => {
-                    e.preventDefault()
                     e.stopPropagation()
+                    if (!disabled) {
+                      setOpen(true)
+                    }
                   }}
                   onClick={(e) => {
-                    e.preventDefault()
                     e.stopPropagation()
-                    onChange(null)
+                    if (!disabled) {
+                      setOpen(true)
+                    }
                   }}
-                >
-                  {icons?.clear ?? DefaultClearIcon}
-                </button>
-              )}
-              {!disabled &&
-                (isLoading ? (
-                  <span
-                    className="absolute -top-0 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground"
-                    style={{ ...iconOffsetStyle, ...spinnerStyle }}
-                  >
-                    {icons?.loading ?? DefaultLoadingIcon}
-                  </span>
-                ) : (
+                  onChange={(e) => {
+                    setIsTyping(true)
+                    handleSearchChange(e.target.value)
+                  }}
+                  onFocus={() => {
+                    if (triggerOnFocus) {
+                      setOpen(true)
+                    }
+                  }}
+                  role="combobox"
+                  aria-autocomplete="list"
+                  aria-expanded={open}
+                  aria-controls="autocomplete-list"
+                />
+                {showClear && (
                   <button
                     type="button"
                     tabIndex={-1}
-                    aria-label={open ? 'Collapse options' : 'Expand options'}
-                    className="absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-                    style={iconOffsetStyle}
+                    aria-label="Clear selection"
+                    className={cn(
+                      'absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground',
+                      clearButtonClassName,
+                    )}
+                    style={clearOffsetStyle}
                     onPointerDown={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -381,19 +378,88 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      setOpen((v) => !v)
+                      if (multiple) {
+                        ;(onChange as (value: MultiSelectValue) => void)([])
+                      } else {
+                        ;(onChange as (value: SingleSelectValue) => void)(null)
+                      }
                     }}
                   >
-                    <span
-                      className={cn(
-                        'inline-flex h-4 w-4 items-center justify-center transition-transform duration-200 ease-in-out',
-                        open && 'rotate-180',
-                      )}
-                    >
-                      {icons?.chevron ?? DefaultChevronDown}
-                    </span>
+                    {icons?.clear ?? DefaultClearIcon}
                   </button>
-                ))}
+                )}
+                {!disabled &&
+                  (isLoading ? (
+                    <span
+                      className="absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center text-muted-foreground"
+                      style={{ ...iconOffsetStyle, ...spinnerStyle }}
+                    >
+                      {icons?.loading ?? DefaultLoadingIcon}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      aria-label={open ? 'Collapse options' : 'Expand options'}
+                      className="absolute top-1/2 z-10 inline-flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                      style={iconOffsetStyle}
+                      onPointerDown={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setOpen((v) => !v)
+                      }}
+                    >
+                      <span
+                        className={cn(
+                          'inline-flex h-4 w-4 items-center justify-center transition-transform duration-200 ease-in-out',
+                          open && 'rotate-180',
+                        )}
+                      >
+                        {icons?.chevron ?? DefaultChevronDown}
+                      </span>
+                    </button>
+                  ))}
+              </div>
+              {multiple && selectedItems.length > 0 && (
+                <div
+                  className="mt-2 flex max-h-20 flex-wrap gap-1 overflow-y-auto rounded-md border border-input bg-background p-2"
+                >
+                  {selectedItems.map((item) => {
+                    const itemValue = String(valueOf(item))
+                    return (
+                      <span
+                        key={itemValue}
+                        className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs"
+                      >
+                        <span>{labelOf(item)}</span>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                          onPointerDown={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            const next = selectedItems.filter(
+                              (selected) => String(valueOf(selected)) !== itemValue,
+                            )
+                            ;(onChange as (value: MultiSelectValue) => void)(next)
+                          }}
+                          aria-label={`Remove ${labelOf(item)}`}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           </PopoverTrigger>
           {!disabled && (
@@ -439,10 +505,23 @@ export const UiAutocomplete = React.forwardRef<HTMLInputElement | null, UiAutoco
                               key={v}
                               value={v}
                               onSelect={() => {
-                                onChange(option)
-                                setIsTyping(false)
-                                handleSearchChange('')
-                                setOpen(false)
+                                if (multiple) {
+                                  const exists = selectedItems.some(
+                                    (item) => String(valueOf(item)) === v,
+                                  )
+                                  const next = exists
+                                    ? selectedItems.filter(
+                                        (item) => String(valueOf(item)) !== v,
+                                      )
+                                    : [...selectedItems, option]
+                                  ;(onChange as (value: MultiSelectValue) => void)(next)
+                                  setIsTyping(true)
+                                } else {
+                                  ;(onChange as (value: SingleSelectValue) => void)(option)
+                                  setIsTyping(false)
+                                  handleSearchChange('')
+                                  setOpen(false)
+                                }
                               }}
                               className="relative flex w-full cursor-pointer select-none items-center justify-between gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-none transition-colors duration-150 hover:bg-accent/70 hover:text-accent-foreground aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                             >

@@ -11,7 +11,7 @@ Use the optional UI component (`UiAutocomplete`) or stay fully headless with hoo
 
 - Remote search with infinite pagination
 - Debounced search input
-- Controlled selection API (`value` / `onChange`)
+- Single and multi-select modes (`multiple`)
 - Custom rendering: `renderOption`, `renderEmpty`, `renderLoading`, `renderError`
 - Optional icon slots: `loading`, `clear`, `check`, `chevron`
 - Style overrides: `className`, `popoverContentClassName`, `commandListClassName`, `clearButtonClassName`
@@ -108,6 +108,21 @@ function App() {
 }
 ```
 
+Multi-select mode:
+
+```tsx
+const [users, setUsers] = useState<OptionType[]>([])
+
+<UiAutocomplete
+  multiple
+  queryKey={['items']}
+  fetchPage={fetchPage}
+  value={users}
+  onChange={setUsers}
+  pageSize={10}
+/>
+```
+
 ## API
 
 ### `UiAutocomplete`
@@ -116,13 +131,13 @@ Required props:
 
 - `queryKey: readonly unknown[]`
 - `fetchPage: FetchPaginatedPage<Record<string, unknown>>`
-- `value: OptionType | null`
-- `onChange: (value: OptionType | null) => void`
+- `value: OptionType | null` (single) or `OptionType[]` (multiple)
+- `onChange: (value) => void` matching the selected mode
 
 Optional props:
 
 - Data/search: `pageSize`, `searchParam`, `nameKey`, `idKey`, `additionalParams`, `debounceMs`
-- Behavior: `triggerOnFocus` (default: `true`), `disabled`, `clearable`
+- Behavior: `multiple`, `triggerOnFocus` (default: `true`), `disabled`, `clearable`
 - Render customization: `renderOption`, `renderEmpty`, `renderLoading`, `renderError`
 - Label/value mapping: `getOptionLabel`, `getOptionValue`
 - Styling: `className`, `popoverContentClassName`, `commandListClassName`, `clearButtonClassName`
